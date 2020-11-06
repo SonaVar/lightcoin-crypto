@@ -1,29 +1,76 @@
-let balance = 500.00;
+class Account {
+  constructor(name) {
+    this.username = name;
+    this.transHistory = [];
+  }
 
-class Withdrawal {
+  get balance() {
+    let balance = 0;
+    for (let item of this.transHistory) {
+      balance += item.value;
+    }
+    return balance;
+  }
 
-  constructor(amount) {
+  addTransaction(transaction) {
+    this.transHistory.push(transaction);
+  }
+}
+
+class Transaction {
+  constructor(amount, accountDet) {
     this.amount = amount;
+    this.account = accountDet;
   }
 
   commit() {
-    balance -= this.amount;
+    if (this.isAllowed) {
+      this.time = new Date();
+      this.account.addTransaction(this);
+      return true;
+    }
+    return false;
   }
 
 }
 
+class Withdrawal extends Transaction {
+  get value() {
+    return -this.amount;
+  }
+
+  get isAllowed() {
+    if (this.amount > this.account.balance) {
+      return false;
+    }
+    return true;
+  }
+}
+
+class Deposit extends Transaction {
+  get value() {
+    return this.amount;
+  }
+
+  get isAllowed() {
+    return true;
+  }
+}
+
+const userSona = new Account('Sona\'s Account');
+
+console.log('Starting account balance: ', userSona.balance);
+
+console.log('Attempting withdrawal...');
+const t1 = new Withdrawal(200.00, userSona);
+console.log('Commiting transaction...', t1.commit());
+console.log('Your account balance is: ', userSona.balance);
 
 
+console.log('Attempting deposit...');
+const t2 = new Deposit(100.00, userSona);
+console.log('Commiting transaction...', t2.commit());
+console.log('Your account balance is: ', userSona.balance);
 
-// DRIVER CODE BELOW
-// We use the code below to "drive" the application logic above and make sure it's working as expected
-
-t1 = new Withdrawal(50.25);
-t1.commit();
-console.log('Transaction 1:', t1);
-
-t2 = new Withdrawal(9.99);
-t2.commit();
-console.log('Transaction 2:', t2);
-
-console.log('Balance:', balance);
+console.log('Ending account balance: ', userSona.balance);
+console.log('Account transaction history: ', userSona.transHistory);
